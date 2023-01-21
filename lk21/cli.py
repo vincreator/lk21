@@ -187,10 +187,13 @@ def main():
                 break
 
     extractor = extractor(logging, args)
-    if getattr(extractor, "required_proxy", None) and not args.skip_proxy:
-        if not args.proxy:
-            parser.error(
-                f"{extractor.__class__.__name__} argumen --proxy dibutuhkan, atau lewati dengan --skip-proxy jika telah menggunakan vpn")
+    if (
+        getattr(extractor, "required_proxy", None)
+        and not args.skip_proxy
+        and not args.proxy
+    ):
+        parser.error(
+            f"{extractor.__class__.__name__} argumen --proxy dibutuhkan, atau lewati dengan --skip-proxy jika telah menggunakan vpn")
     extractor.run_as_module = args.json or args.json_dump
 
     if not args.all and not extractor.tag and not args.debug:
@@ -202,7 +205,7 @@ def main():
     id = False
     nextPage = args.all
     Range = parse_range(args.page)
-    netloc = urlparse(extractor.host).netloc if not args.all else "ALL"
+    netloc = "ALL" if args.all else urlparse(extractor.host).netloc
     try:
         page = Range.__next__()
         cache = {page: extractor.search(query, page=page)}
@@ -215,7 +218,7 @@ def main():
                 sys.exit("Tidak ditemukan")
 
             if len(cache[page]) == 1:
-                response = f"1. " + cache[page][0]["title"]
+                response = "1. " + cache[page][0]["title"]
             else:
                 response = extractor.choice([
                     i['title'] for i in cache[page]] + [
